@@ -10,9 +10,9 @@ Das Projekt wird auf Linux (konkret Xubuntu LTS 24.04) entwickelt und derzeit nu
 
 Das Projekt nutzt 
 - `docker` zum Verwalten der Abhängigkeiten.
-- `[earthly]([https::/](https://earthly.dev/earthfile)` als build-Tool für den Docker-Container.
-- `[duckdb](https://duckdb.org/)` als Datenbank-Backend
-- `[dbt core](https://www.getdbt.com/)` als Datenmanagement-System
+- [earthly](https://earthly.dev/earthfile) als build-Tool für den Docker-Container.
+- [duckdb](https://duckdb.org/) als Datenbank-Backend
+- [dbt core](https://www.getdbt.com/) als Datenmanagement-System
 
 ### Docker
 
