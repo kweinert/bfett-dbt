@@ -41,9 +41,14 @@ In der [EarthFile](https://github.com/kweinert/buffett/blob/main/Earthfile) sind
 
 ### buffett dbt Projekt
 
-Dieses Github-Repository enthält die Modelle für das dbt-Projekt, jedoch nicht die Daten. Außerdem enthält das Repository ein Skript `buffett`, mit dem der Docker-Container gestartet wird.
+Dieses Github-Repository enthält die Modelle für das dbt-Projekt, jedoch nicht die Daten. 
+
+Außerdem enthält das Repository ein Skript `buffett`, mit dem der Docker-Container gestartet wird.
+Derzeit erwartet das Skript, dass das Projekt im Ordner `~/Dbtspace/buffett` abgelegt ist.
 
 ```
+mkdir -p ~/Dbtspace/buffet
+cd ~/Dbtspace
 git clone https://github.com/kweinert/buffett.git
 cd buffett
 chmod +x ~/bin/buffett
