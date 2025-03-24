@@ -59,3 +59,15 @@ mv ./buffett ~/bin # oder anderes Verzeichnis
 ## Daten-Modelle
 
 TODO
+
+## Roadmap
+
+### Version 0.1
+
+[ ] [Lang+Schwarz](https://www.ls-x.de/de/download) als Datenquelle erschließen
+[ ] Skript um Kommandos erweitern (update / view / etc)
+
+### Später / Vielleicht
+
+[ ] [edgarWebR](https://cran.r-project.org/web/packages/edgarWebR/vignettes/edgarWebR.html) als Datenquelle erschließen
+[ ] Shiny statt Rmd?
