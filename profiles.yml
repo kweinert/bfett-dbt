@@ -1,0 +1,11 @@
+buffett:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: '/app/database/buffett_dev.duckdb'
+      threads: 8
+    prod:
+      type: duckdb
+      path: '/app/database/buffett_prod.duckdb'
+      threads: 8

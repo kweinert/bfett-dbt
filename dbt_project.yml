@@ -1,0 +1,16 @@
+name: 'buffett'
+version: '1.0.0'
+config-version: 2
+profile: 'buffett'
+
+# Verzeichnisse
+model-paths: ["models"]
+target-path: "database"
+clean-targets: ["database"]
+
+# Optionale Konfiguration
+require-dbt-version: ">=1.0.0"
+models:
+  buffett:
+    staging:
+      +materialized: table  # Standard für Staging-Modelle, kann überschrieben werden
