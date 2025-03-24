@@ -56,5 +56,6 @@ mv ./buffett ~/bin # oder anderes Verzeichnis
 ```
 
 
-## Models
-Overview of the models and their purpose
+## Daten-Modelle
+
+TODO
