@@ -37,8 +37,9 @@ mkdir -p ~/Dbtspace/buffet/buffett-build
 cd ~/Dbtspace/buffett
 git clone https://github.com/kweinert/buffett-build.git
 cd buffett-build
-chmod +x ./buffett
 ln -s ./buffet ~/bin/buffett # oder anderes Verzeichnis
+chmod +x ./buffett
+chmod +x ~/bin/buffett
 ```
 
 
