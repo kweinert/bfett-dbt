@@ -1,50 +1,154 @@
 #!/bin/bash
 
+# Logger-Funktion definieren
+log() {
+	echo "$1"
+    logger -t buffett "$1"
+}
+
+# Funktion zum Prüfen, ob Docker läuft
+check_docker() {
+    if ! docker info >/dev/null 2>&1; then
+        log "Error: Docker is not running or not accessible"
+        cd "$ORIGINAL_DIR"
+        exit 1
+    fi
+}
+
 # Aktuelles Verzeichnis speichern
 ORIGINAL_DIR=$(pwd)
 
-# Arbeitsverzeichnis festlegen
-WORK_DIR="$HOME/Dbtspace/buffett"
+# Arbeitsverzeichnis als übergeordnetes Verzeichnis des Skripts festlegen
+# $0 ist der Pfad zum Skript; realpath löst Symlinks auf
+SCRIPT_PATH=$(realpath "$0")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+WORK_DIR=$(dirname "$SCRIPT_DIR")
 
-# Prüfen, ob das Verzeichnis existiert
-if [ ! -d "$WORK_DIR" ]; then
-    echo "error: directory $WORK_DIR does not exist."
-    cd "$ORIGINAL_DIR"  # Zurück zum Ausgangsordner
-    exit 1
-fi
-
-# In das Arbeitsverzeichnis wechseln
-cd "$WORK_DIR" || {
-    echo "error: could not change into $WORK_DIR."
-    cd "$ORIGINAL_DIR"  # Zurück zum Ausgangsordner
-    exit 1
+# Hilfetext Funktion
+show_help() {
+    echo "Usage: $(basename "$0") [build|update|help|view]"
+    echo "Commands:"
+    echo "  build    Build the Docker image in $WORK_DIR/buffett-build"
+    echo "  update   Run the Docker container"
+    echo "  help     Show this help message"
+    echo "  view     Open the dashboard in default browser"
+    echo "Description:"
+    echo "  This script manages the Buffett application with Docker."
+    echo "  Ensure Docker is installed and running before use."
 }
 
-# Standardwerte
-IMAGE="buffett-duckdb:latest"
-HOST_DIR="$WORK_DIR"
-CONTAINER_DIR="/app"
-
-# Docker-Befehl ausführen
-docker run -it \
-    -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
-    -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
-    -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
-    -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
-    --user "$(id -u):$(id -g)" \
-    "$IMAGE"
-
-# Fehlerprüfung
-EXIT_CODE=$?
-if [ $EXIT_CODE -eq 0 ]; then
-    echo "buffett completed without (visible) errors."
-else
-    echo "buffett encountered an error (exit code: $EXIT_CODE)."
+# Parameter prüfen
+if [ $# -ne 1 ]; then
+    show_help
+    exit 1
 fi
+
+case "$1" in
+    "update")
+		# Docker prüfen
+        check_docker
+        
+        # Prüfen, ob das Verzeichnis existiert
+        if [ ! -d "$WORK_DIR" ]; then
+            log "Error: Directory $WORK_DIR does not exist"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        fi
+
+        # In das Arbeitsverzeichnis wechseln
+        cd "$WORK_DIR" || {
+            log "Error: Could not change into $WORK_DIR"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        }
+
+        # Standardwerte
+        IMAGE="buffett-duckdb:latest"
+        HOST_DIR="$WORK_DIR"
+        CONTAINER_DIR="/app"
+
+        # Docker-Befehl ausführen
+        docker run -it \
+            -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
+            -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
+            -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
+            -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
+            --user "$(id -u):$(id -g)" \
+            "$IMAGE"
+
+        # Fehlerprüfung
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -eq 0 ]; then
+            log "Update completed successfully"
+        else
+            log "Update failed with exit code: $EXIT_CODE"
+        fi
+        ;;
+
+    "build")
+		# Docker prüfen
+        check_docker
+        
+        BUILD_DIR="$WORK_DIR/buffett-build"
+        if [ ! -d "$BUILD_DIR" ]; then
+            log "Error: Build directory $BUILD_DIR does not exist"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        fi
+
+        cd "$BUILD_DIR" || {
+            log "Error: Could not change into $BUILD_DIR"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        }
+
+        docker build -t buffett-duckdb:latest .
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -eq 0 ]; then
+            log "Build completed successfully"
+        else
+            log "Build failed with exit code: $EXIT_CODE"
+        fi
+        ;;
+
+    "view")
+        DASHBOARD="$WORK_DIR/dashboard/index.html"
+        if [ ! -f "$DASHBOARD" ]; then
+            log "Error: Dashboard file $DASHBOARD does not exist"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        fi
+
+        # Plattformabhängiger Öffnungsbefehl
+        if command -v xdg-open > /dev/null; then
+            xdg-open "$DASHBOARD"
+        elif command -v open > /dev/null; then
+            open "$DASHBOARD"
+        else
+            log "Error: No suitable command to open dashboard"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        fi
+        log "Dashboard view requested"
+        EXIT_CODE=0
+        ;;
+
+    "help")
+        show_help
+        EXIT_CODE=0
+        ;;
+
+    *)
+        log "Error: Unknown command '$1'"
+        show_help
+        cd "$ORIGINAL_DIR"
+        exit 1
+        ;;
+esac
 
 # Zurück zum ursprünglichen Verzeichnis
 cd "$ORIGINAL_DIR" || {
-    echo "warning: could not change the working directory to $ORIGINAL_DIR."
+    log "Warning: Could not return to $ORIGINAL_DIR"
     exit 1
 }
 
