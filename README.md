@@ -40,19 +40,37 @@ cd buffett-build
 ln -s ./buffet ~/bin/buffett # oder anderes Verzeichnis
 chmod +x ./buffett
 chmod +x ~/bin/buffett
+buffett build
 ```
 
+## Kommandos
 
-## Daten-Modelle
+### buffett build
 
-TODO
+Erzeugt ein Docker-Image ohne Daten, aber mit der Modellstruktur und allen Abhängigkeiten.
+
+### buffett update
+
+Startet das Docker-Image und führt `dbt run` aus. Dieser Befehl aktualisiert die Datenbasis.
+
+### buffett view
+
+Startet das Dashboard, das auf den Daten beruht.
+
+### buffett dbt-docs
+
+Startet eine grafische Oberfläche, die es ermöglicht, das dbt-Modell zu untersuchen.
+
+### buffett shell
+
+Startet den Container und startet eine Shell. Gut zum Debuggen.
 
 ## Roadmap
 
 ### Version 0.1
 
 [ ] [Lang+Schwarz](https://www.ls-x.de/de/download) als Datenquelle erschließen
-[ ] Skript um Kommandos erweitern (update / view / etc)
+[x] Skript um Kommandos erweitern (update / view / etc)
 
 ### Später / Vielleicht
 
