@@ -9,7 +9,7 @@ Systematische Aufbereitung von Handelsdaten (Lang+Schwarz), Verschneidung mit Po
 Das Projekt wird auf Linux (konkret Xubuntu LTS 24.04) entwickelt und derzeit nur dort getestet.
 
 Das Projekt nutzt 
-- `docker` zum Verwalten der Abhängigkeiten.
+- [docker](https://www.docker.com/) zum Verwalten der Abhängigkeiten.
 - [duckdb](https://duckdb.org/) als Datenbank-Backend
 - [dbt core](https://www.getdbt.com/) als Datenmanagement-System
 
@@ -69,6 +69,7 @@ Startet den Container und startet eine Shell. Gut zum Debuggen.
 
 ### Version 0.1
 
+- [ ] Qualität prüfen
 - [ ] [Lang+Schwarz](https://www.ls-x.de/de/download) als Datenquelle erschließen
 - [x] Skript um Kommandos erweitern (update / view / etc)
 
