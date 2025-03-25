@@ -33,12 +33,12 @@ Außerdem enthält das Repository ein Skript `buffett`, mit dem der Docker-Conta
 Derzeit erwartet das Skript, dass das Projekt im Ordner `~/Dbtspace/buffett` abgelegt ist.
 
 ```
-mkdir -p ~/Dbtspace/buffet/build
-cd ~/Dbtspace
-git clone https://github.com/kweinert/buffett.git
-cd buffett
-chmod +x ~/bin/buffett
-ln -s ~/bin/buffett ./buffett ~/bin # oder anderes Verzeichnis
+mkdir -p ~/Dbtspace/buffet/buffett-build
+cd ~/Dbtspace/buffett
+git clone https://github.com/kweinert/buffett-build.git
+cd buffett-build
+chmod +x ./buffett
+ln -s ./buffet ~/bin/buffett # oder anderes Verzeichnis
 ```
 
 
