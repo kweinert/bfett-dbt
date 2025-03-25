@@ -69,10 +69,10 @@ Startet den Container und startet eine Shell. Gut zum Debuggen.
 
 ### Version 0.1
 
-[ ] [Lang+Schwarz](https://www.ls-x.de/de/download) als Datenquelle erschließen
-[x] Skript um Kommandos erweitern (update / view / etc)
+- [ ] [Lang+Schwarz](https://www.ls-x.de/de/download) als Datenquelle erschließen
+- [x] Skript um Kommandos erweitern (update / view / etc)
 
 ### Später / Vielleicht
 
-[ ] [edgarWebR](https://cran.r-project.org/web/packages/edgarWebR/vignettes/edgarWebR.html) als Datenquelle erschließen
-[ ] Shiny statt Rmd?
+- [ ] [edgarWebR](https://cran.r-project.org/web/packages/edgarWebR/vignettes/edgarWebR.html) als Datenquelle erschließen
+- [ ] Shiny statt Rmd?
