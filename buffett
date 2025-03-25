@@ -21,15 +21,16 @@ cd "$WORK_DIR" || {
 }
 
 # Standardwerte
-TARGET=${1:-dev}  # Erstes Argument oder 'dev' als Default
 IMAGE="buffett-duckdb:latest"
 HOST_DIR="$WORK_DIR"
 CONTAINER_DIR="/app"
 
 # Docker-Befehl ausführen
 docker run -it \
-    -v "$HOST_DIR:$CONTAINER_DIR" \
-    -e "TARGET=$TARGET" \
+    -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
+    -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
+    -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
+    -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
     --user "$(id -u):$(id -g)" \
     "$IMAGE"
 
