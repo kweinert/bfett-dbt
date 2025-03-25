@@ -13,6 +13,18 @@ check_docker() {
         cd "$ORIGINAL_DIR"
         exit 1
     fi
+    
+    # Prüfen, ob ein buffett-duckdb Container läuft
+    RUNNING_CONTAINER=$(docker ps -q -f "ancestor=buffett-duckdb:latest")
+    if [ -n "$RUNNING_CONTAINER" ]; then
+        log "Stopping existing buffett-duckdb container: $RUNNING_CONTAINER"
+        docker stop "$RUNNING_CONTAINER" >/dev/null 2>&1 || {
+            log "Error: Failed to stop container $RUNNING_CONTAINER"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        }
+        log "Container $RUNNING_CONTAINER stopped successfully"
+    fi
 }
 
 # Aktuelles Verzeichnis speichern
@@ -28,10 +40,12 @@ WORK_DIR=$(dirname "$SCRIPT_DIR")
 show_help() {
     echo "Usage: $(basename "$0") [build|update|help|view]"
     echo "Commands:"
-    echo "  build    Build the Docker image in $WORK_DIR/buffett-build"
-    echo "  update   Run the Docker container"
-    echo "  help     Show this help message"
-    echo "  view     Open the dashboard in default browser"
+    echo "  update    Run the Docker container"
+    echo "  view      Open the dashboard in default browser"
+	echo "  dbt-docs  View the dbt documentation for this project"
+    echo "  build     Build the Docker image in $WORK_DIR/buffett-build"
+    echo "  help      Show this help message"
+    echo "  shell     Run the Docker image and enter shell in it"
     echo "Description:"
     echo "  This script manages the Buffett application with Docker."
     echo "  Ensure Docker is installed and running before use."
@@ -83,6 +97,116 @@ case "$1" in
         else
             log "Update failed with exit code: $EXIT_CODE"
         fi
+        ;;
+        
+    "dbt-docs")
+		# Docker prüfen
+        check_docker
+        
+        # Prüfen, ob das Verzeichnis existiert
+        if [ ! -d "$WORK_DIR" ]; then
+            log "Error: Directory $WORK_DIR does not exist"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        fi
+
+        # In das Arbeitsverzeichnis wechseln
+        cd "$WORK_DIR" || {
+            log "Error: Could not change into $WORK_DIR"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        }
+
+        # Standardwerte
+        IMAGE="buffett-duckdb:latest"
+        HOST_DIR="$WORK_DIR"
+        CONTAINER_DIR="/app"
+
+        # Docker-Befehl ausführen
+        docker run -it \
+            -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
+            -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
+            -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
+            -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
+            -p 8080:8080 \
+            -d \
+            --user "$(id -u):$(id -g)" \
+            "$IMAGE" \
+            dbt-docs
+            
+        # Fehlerprüfung
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -eq 0 ]; then
+            log "dbt-docs server starting"
+        else
+            log "Failed to start dbt-docs server with exit code: $EXIT_CODE"
+        fi
+
+        # Warten, bis der Port 8080 verfügbar ist (max. 30 Sekunden)
+        TIMEOUT=30
+        COUNT=0
+        until curl -s http://localhost:8080 >/dev/null 2>&1 || [ $COUNT -eq $TIMEOUT ]; do
+            sleep 1
+            COUNT=$((COUNT + 1))
+        done
+
+        if [ $COUNT -eq $TIMEOUT ]; then
+            log "Error: dbt-docs server timeout after $TIMEOUT seconds"
+            check_docker # stop the container
+            cd "$ORIGINAL_DIR"
+            exit 1
+        fi
+        log "dbt-docs server started successfully"
+
+        # Browser öffnen
+        if command -v xdg-open > /dev/null; then
+            xdg-open "http://localhost:8080"
+        elif command -v open > /dev/null; then
+            open "http://localhost:8080"
+        else
+            echo "warning: no suitable command found to open the browser."
+            echo "Please open http://localhost:8080 manually."
+            log "Warning: No browser opener found"
+            EXIT_CODE=0
+        fi
+        ;;
+        
+    "shell")
+		# Docker prüfen
+        check_docker
+        log "docker shell requested"
+        
+        # Prüfen, ob das Verzeichnis existiert
+        if [ ! -d "$WORK_DIR" ]; then
+            log "Error: Directory $WORK_DIR does not exist"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        fi
+
+        # In das Arbeitsverzeichnis wechseln
+        cd "$WORK_DIR" || {
+            log "Error: Could not change into $WORK_DIR"
+            cd "$ORIGINAL_DIR"
+            exit 1
+        }
+
+        # Standardwerte
+        IMAGE="buffett-duckdb:latest"
+        HOST_DIR="$WORK_DIR"
+        CONTAINER_DIR="/app"
+
+        # Docker-Befehl ausführen
+        docker run -it \
+            -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
+            -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
+            -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
+            -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
+            -p 8080:8080 \
+            --user "$(id -u):$(id -g)" \
+            "$IMAGE" \
+            shell
+
+        EXIT_CODE=0
         ;;
 
     "build")

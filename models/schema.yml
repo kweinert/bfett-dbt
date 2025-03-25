@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: stg_trades
+    description: "Dieses Modell enthält die Handelsdaten der [Lang & Schwarz Exchange](https://www.ls-x.de/de/download)."
+    columns:
+      - name: isin
+        description: "International Securities Identification Number"
+      - name: trade_time
+        description: "Handelszeitpunkt"
+      - name: size
+        description: "Anzahl Wertpapiere"
+      - name: price
+        description: "Preis"
+      - name: currency
+        description: "Währung"
+      - name: load_timestamp
+        description: "Datum des Einlesens"
+
+  - name: stg_active_positions
+    description: "Dieses Modell enthält die aktiven Positionen des Portfolios. Es handelt sich um eine CSV-Datei, die manuell zu pflegen ist."
+    columns:
+      - name: isin
+        description: "International Securities Identification Number"
+      - name: name
+        description: "Name des Wertpapiers"
+      - name: amount
+        description: "Anzahl Wertpapiere"  
+      - name: buy_date
+        description: "Kaufdatum"
+      - name: buy_price
+        description: "Kaufpreis inkl. Gebühren"
+      - name: category
+        description: "Asset-Klasse des Wertpapiers"
+ 
+  - name: stg_cash
+    description: "Dieses Modell enthält die Cashpositionen. Es handelt sich um eine CSV-Datei, die manuell zu pflegen ist."
+    columns:
+      - name: date
+        description: "Datum"
+      - name: cash
+        description: "Cashposition"        
+  
+  - name: int_trades_weekly
+    description: "Dieses Modell aggregiert die Handelsdaten (stg_trades) auf wöchentlicher Ebene und ermittelt die letzten verfügbaren Preise."
+    columns:
+      - name: isin
+        description: "International Securities Identification Number"
+      - name: calendar_week
+        description: "Kalenderwoche im Format %Y-%w"    
+      - name: close
+        description: "Letzter verfügbarer Preis an LSX für die ISIN in der Kalenderwoche"  
+      - name: previous_close
+        description: "Letzter verfügbarer Preis an LSX für die ISIN in der vorhergehenden Kalenderwoche"  
+      
+  - name: active_positions_weekly
+    description: "Dieses Modell verknüpft aktuelle Positionen (active_positions) mit den wöchentlichen Schlusskursen (int_trades_weekly). Es wird verwendet vom Dashboard."
+    columns:
+      - name: isin
+        description: "International Securities Identification Number"
+      - name: name
+        description: "Name des Wertpapiers"
+      - name: category
+        description: "Asset-Klasse des Wertpapiers"
+      - name: calendar_week
+        description: "Kalenderwoche im Format %Y-%w"    
+      - name: amount
+        description: "Anzahl Wertpapiere, die in der angegebenen Kalenderwoche gehalten wurden"  
+      - name: buy_in
+        description: "Kaufpreis der gesamten Position inkl. Gebühren	"
+      - name: close_value
+        description: "Wert der gesamten Position an LSX für die ISIN in der Kalenderwoche"  
+      - name: previous_close_value
+        description: "Wert der gesamten Position an LSX für die ISIN in der vorhergehenden Kalenderwoche"  

@@ -56,6 +56,7 @@ COPY packages.yml .
 COPY profiles.yml .  
 COPY models/ ./models/
 COPY macros/ ./macros/
+#COPY docs/ ./docs/
 RUN mkdir -p ./target
 RUN dbt deps
 
@@ -66,7 +67,7 @@ COPY run_dbt.sh .
 RUN chmod +x run_dbt.sh
 # das sollte man evtl. nochmal ändern
 RUN chmod -R 777 . # Zugriff für alle
-
+EXPOSE 8080
 
 ENTRYPOINT ["/app/run_dbt.sh"]
 #CMD ["run", "--project-dir", "/app", "--profiles-dir", "/app"]

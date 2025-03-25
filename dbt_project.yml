@@ -6,6 +6,7 @@ profile: 'buffett'
 # Verzeichnisse
 model-paths: ["models"]
 clean-targets: ["database"]
+docs-paths: ["docs"] 
 
 # Optionale Konfiguration
 require-dbt-version: ">=1.0.0"
