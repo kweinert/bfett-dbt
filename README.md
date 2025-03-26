@@ -20,6 +20,7 @@ sudo apt update
 sudo apt install docker.io
 sudo usermod -aG docker $USER  # Erlaubt Docker ohne sudo (nach Neustart wirksam)
 newgrp docker  # Sofort wirksam ohne Logout
+sudo apt install docker-buildx # legacy build decprecated
 docker --version  # Überprüfen
 ```
 
