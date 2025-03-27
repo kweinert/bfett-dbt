@@ -13,6 +13,6 @@ require-dbt-version: ">=1.0.0"
 models:
   buffett:
     staging:
-      +materialized: table  # Standard für Staging-Modelle, kann überschrieben werden
-
-
+      materialized: table  # Standard für Staging-Modelle
+      stg_trades:
+        materialized: incremental  # Explizite Ausnahme für stg_trades

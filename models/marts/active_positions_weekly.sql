@@ -9,7 +9,7 @@ WITH positions_with_week AS (
         buy_price,
         category,
         CONCAT(EXTRACT(YEAR FROM buy_date), '-', LPAD(EXTRACT(WEEK FROM buy_date)::TEXT, 2, '0')) AS buy_week
-    FROM {{ ref('stg_active_positions') }}
+    FROM {{ ref('active_positions') }}
 )
 
 SELECT

@@ -10,13 +10,29 @@ elif [ "$1" == "dbt-docs" ]; then
   echo "dbt docs serve"
   dbt docs serve --host 0.0.0.0
 else
-  # Standardverhalten: dbt run ausführen und bei Erfolg das Dashboard rendern
+  # Schritt 1: lsx Daten nach /data/lsx_trades kopieren
+  # Es werden nur diejenigen CSV kopiert, die nicht in 
+  # /app/seeds/lsx-processed.csv enthalten sind.
+  # Sofern dbt run erfolgreich war, werden sie später gelöscht, s.u.
+  run_lsx.sh
+  
+  # Schritt 2: dbt 
+  dbt seed # kleine Tabellen kopieren
+  dbt compile 
   dbt run
+  
   if [ $? -eq 0 ]; then
-    echo "dbt run erfolgreich, rendere Dashboard..."
+    echo "dbt run erfolgreich."
+    
+    # Schritt 4: lsx aufräumen
+    echo "Deleting imported CSV.."
+    rm "/app/data/lsx_trades/lsx_*.csv"
+    
+    # Schritt 5: render dashboard
+    echo "render dashboard"
     Rscript -e "rmarkdown::render('/app/dashboard/index.Rmd', output_file='/app/dashboard/index.html')"
   else
-    echo "dbt run fehlgeschlagen, Dashboard-Rendering wird übersprungen"
+    echo "dbt failed."
     exit 1  # Beendet das Skript mit Fehlercode
   fi
 fi

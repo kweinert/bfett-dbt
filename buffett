@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Aktuelles Verzeichnis speichern
+ORIGINAL_DIR=$(pwd)
+
+# Arbeitsverzeichnis als übergeordnetes Verzeichnis des Skripts festlegen
+# $0 ist der Pfad zum Skript; realpath löst Symlinks auf
+SCRIPT_PATH=$(realpath "$0")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+WORK_DIR=$(dirname "$SCRIPT_DIR")
+
+
 # Logger-Funktion definieren
 log() {
 	echo "$1"
@@ -27,18 +37,71 @@ check_docker() {
     fi
 }
 
-# Aktuelles Verzeichnis speichern
-ORIGINAL_DIR=$(pwd)
+run_docker() {
+    local cmd="$1"  # Der Parameter XXXX wird als cmd übergeben
 
-# Arbeitsverzeichnis als übergeordnetes Verzeichnis des Skripts festlegen
-# $0 ist der Pfad zum Skript; realpath löst Symlinks auf
-SCRIPT_PATH=$(realpath "$0")
-SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-WORK_DIR=$(dirname "$SCRIPT_DIR")
+    check_docker
+    log "docker shell requested"
+    
+    # Prüfen, ob das Verzeichnis existiert
+    if [ ! -d "$WORK_DIR" ]; then
+        log "Error: Directory $WORK_DIR does not exist"
+        cd "$ORIGINAL_DIR"
+        exit 1
+    fi
+
+    # In das Arbeitsverzeichnis wechseln
+    cd "$WORK_DIR" || {
+        log "Error: Could not change into $WORK_DIR"
+        cd "$ORIGINAL_DIR"
+        exit 1
+    }
+
+    # Standardwerte
+    IMAGE="buffett-duckdb:latest"
+    HOST_DIR="$WORK_DIR"
+    CONTAINER_DIR="/app"
+    mkdir -p "$HOST_DIR/data"
+    mkdir -p "$HOST_DIR/database"
+    mkdir -p "$HOST_DIR/logs"
+    mkdir -p "$HOST_DIR/dashboard"
+    mkdir -p "$HOST_DIR/seeds"
+    mkdir -p "$HOST_DIR/lsx"
+
+    # Docker-Befehl ausführen
+    docker run -it \
+        -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
+        -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
+        -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
+        -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
+        -v "$HOST_DIR/seeds:$CONTAINER_DIR/seeds" \
+        -v "$HOST_DIR/lsx:$CONTAINER_DIR/lsx" \
+        -p 8080:8080 \
+        --user "$(id -u):$(id -g)" \
+        "$IMAGE" \
+        "$cmd"
+}
+
+view_url() {
+    local url="$1"  # Der Parameter wird als url übergeben
+
+    # Plattformabhängiger Öffnungsbefehl
+    if command -v xdg-open > /dev/null; then
+        xdg-open "$url"
+    elif command -v open > /dev/null; then
+        open "$url"
+    else
+        log "Error: No suitable command to open $url"
+        cd "$ORIGINAL_DIR"
+        exit 1
+    fi
+    log "Dashboard view requested"
+}
+
 
 # Hilfetext Funktion
 show_help() {
-    echo "Usage: $(basename "$0") [build|update|help|view]"
+    echo "Usage: $(basename "$0") [update|view|dbt-docs|build|help|shell]"
     echo "Commands:"
     echo "  update    Run the Docker container"
     echo "  view      Open the dashboard in default browser"
@@ -59,36 +122,7 @@ fi
 
 case "$1" in
     "update")
-		# Docker prüfen
-        check_docker
-        
-        # Prüfen, ob das Verzeichnis existiert
-        if [ ! -d "$WORK_DIR" ]; then
-            log "Error: Directory $WORK_DIR does not exist"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        fi
-
-        # In das Arbeitsverzeichnis wechseln
-        cd "$WORK_DIR" || {
-            log "Error: Could not change into $WORK_DIR"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        }
-
-        # Standardwerte
-        IMAGE="buffett-duckdb:latest"
-        HOST_DIR="$WORK_DIR"
-        CONTAINER_DIR="/app"
-
-        # Docker-Befehl ausführen
-        docker run -it \
-            -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
-            -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
-            -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
-            -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
-            --user "$(id -u):$(id -g)" \
-            "$IMAGE"
+		run_docker
 
         # Fehlerprüfung
         EXIT_CODE=$?
@@ -100,39 +134,7 @@ case "$1" in
         ;;
         
     "dbt-docs")
-		# Docker prüfen
-        check_docker
-        
-        # Prüfen, ob das Verzeichnis existiert
-        if [ ! -d "$WORK_DIR" ]; then
-            log "Error: Directory $WORK_DIR does not exist"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        fi
-
-        # In das Arbeitsverzeichnis wechseln
-        cd "$WORK_DIR" || {
-            log "Error: Could not change into $WORK_DIR"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        }
-
-        # Standardwerte
-        IMAGE="buffett-duckdb:latest"
-        HOST_DIR="$WORK_DIR"
-        CONTAINER_DIR="/app"
-
-        # Docker-Befehl ausführen
-        docker run -it \
-            -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
-            -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
-            -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
-            -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
-            -p 8080:8080 \
-            -d \
-            --user "$(id -u):$(id -g)" \
-            "$IMAGE" \
-            dbt-docs
+		run_docker dbt-docs
             
         # Fehlerprüfung
         EXIT_CODE=$?
@@ -159,52 +161,11 @@ case "$1" in
         log "dbt-docs server started successfully"
 
         # Browser öffnen
-        if command -v xdg-open > /dev/null; then
-            xdg-open "http://localhost:8080"
-        elif command -v open > /dev/null; then
-            open "http://localhost:8080"
-        else
-            echo "warning: no suitable command found to open the browser."
-            echo "Please open http://localhost:8080 manually."
-            log "Warning: No browser opener found"
-            EXIT_CODE=0
-        fi
+        view_url "http://localhost:8080"
         ;;
         
     "shell")
-		# Docker prüfen
-        check_docker
-        log "docker shell requested"
-        
-        # Prüfen, ob das Verzeichnis existiert
-        if [ ! -d "$WORK_DIR" ]; then
-            log "Error: Directory $WORK_DIR does not exist"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        fi
-
-        # In das Arbeitsverzeichnis wechseln
-        cd "$WORK_DIR" || {
-            log "Error: Could not change into $WORK_DIR"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        }
-
-        # Standardwerte
-        IMAGE="buffett-duckdb:latest"
-        HOST_DIR="$WORK_DIR"
-        CONTAINER_DIR="/app"
-
-        # Docker-Befehl ausführen
-        docker run -it \
-            -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
-            -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
-            -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
-            -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
-            -p 8080:8080 \
-            --user "$(id -u):$(id -g)" \
-            "$IMAGE" \
-            shell
+		run_docker shell
 
         EXIT_CODE=0
         ;;
@@ -244,17 +205,7 @@ case "$1" in
         fi
 
         # Plattformabhängiger Öffnungsbefehl
-        if command -v xdg-open > /dev/null; then
-            xdg-open "$DASHBOARD"
-        elif command -v open > /dev/null; then
-            open "$DASHBOARD"
-        else
-            log "Error: No suitable command to open dashboard"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        fi
-        log "Dashboard view requested"
-        EXIT_CODE=0
+        view_url $DASHBOARD
         ;;
 
     "help")
