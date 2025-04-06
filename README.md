@@ -70,7 +70,7 @@ Startet den Container und startet eine Shell. Gut zum Debuggen.
 
 Einige ISIN, die auf Trade Republic handelbar sind, sind offenbar nicht in den Handelsdaten von LSX enthalten. Das sind z.B. ISIN von Knockout Zertifikaten.
 
-Im Moment geht die Zeitinformation verloren, nur das Datum wird behalten.
+Für Freitag, 4.4.2025, hat der späteste Trade einen Zeitstempel von 14 Uhr. 
 
 ## Roadmap
 
