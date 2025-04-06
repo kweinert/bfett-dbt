@@ -36,7 +36,7 @@ for asset in "${assets[@]}"; do
     url=$(echo "$asset" | cut -d' ' -f2-)
     
     # Export as environment variables
-    export "ASSET_${name//./_}"="$url"
+    #export "ASSET_${name//./_}"="$url"
     
     # Check if file exists in LSX directory
     if [ ! -f "$LSX/$name" ]; then

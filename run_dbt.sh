@@ -14,7 +14,8 @@ else
   # Es werden nur diejenigen CSV kopiert, die nicht in 
   # /app/seeds/lsx-processed.csv enthalten sind.
   # Sofern dbt run erfolgreich war, werden sie später gelöscht, s.u.
-  run_lsx.sh
+  echo "updating lsx data."
+  ./run_lsx.sh
   
   # Schritt 2: dbt 
   dbt seed # kleine Tabellen kopieren
@@ -23,12 +24,8 @@ else
   
   if [ $? -eq 0 ]; then
     echo "dbt run erfolgreich."
-    
-    # Schritt 4: lsx aufräumen
-    echo "Deleting imported CSV.."
-    rm "/app/data/lsx_trades/lsx_*.csv"
-    
-    # Schritt 5: render dashboard
+       
+    # Schritt 3: render dashboard
     echo "render dashboard"
     Rscript -e "rmarkdown::render('/app/dashboard/index.Rmd', output_file='/app/dashboard/index.html')"
   else

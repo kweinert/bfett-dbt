@@ -11,14 +11,14 @@
     {% else %}
         {% set max_date_value = '1900-01-01' %}
     {% endif %}
-    {{ log("max_date is: " ~ max_date_value, info=True) }}
+    {# {{ log("max_date is: " ~ max_date_value, info=True) }} #}
 
     {# Liste der Dateien abrufen und filtern #}
     {% set files_query %}
         SELECT file AS filename FROM glob('/app/data/lsx_trades/*.csv.gz')
     {% endset %}
     {% set files_result = run_query(files_query) %}
-    {{ log("files_result contains: " ~ files_result|join(", "), info=True) }}
+    {# {{ log("files_result contains: " ~ files_result|join(", "), info=True) }} #}
 
     {% set files_to_process = [] %}
     {% for row in files_result %}
@@ -28,7 +28,7 @@
             {% do files_to_process.append(filename) %}
         {% endif %}
     {% endfor %}
-    {{ log("files_to_process contains: " ~ files_to_process|join(", "), info=True) }}
+    {# {{ log("files_to_process contains: " ~ files_to_process|join(", "), info=True) }} #}
 {% endif %}
 
 WITH max_date AS (
