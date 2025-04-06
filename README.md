@@ -80,6 +80,16 @@ Im Moment geht die Zeitinformation verloren, nur das Datum wird behalten.
 - [x] [Lang+Schwarz](https://www.ls-x.de/de/download) als Datenquelle erschließen
 - [x] Skript um Kommandos erweitern (update / view / etc)
 
+### Version 0.2
+
+- [ ] Wochenchart, wo Cash und Portfolio dargestellt sind
+- [ ] aus transactions die Tabellen cash, open_positions und closed_trades generieren.
+
+### Version 0.3
+
+- [ ] abgeschlossene Trades darstellen
+- [ ] discount / premium zones bestimmen für einzelne Isin
+
 ### Später / Vielleicht
 
 - [ ] [edgarWebR](https://cran.r-project.org/web/packages/edgarWebR/vignettes/edgarWebR.html) als Datenquelle erschließen
