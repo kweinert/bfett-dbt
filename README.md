@@ -66,12 +66,18 @@ Startet eine grafische Oberfläche, die es ermöglicht, das dbt-Modell zu unters
 
 Startet den Container und startet eine Shell. Gut zum Debuggen.
 
+## Qualität / Einschränkungen
+
+Einige ISIN, die auf Trade Republic handelbar sind, sind offenbar nicht in den Handelsdaten von LSX enthalten. Das sind z.B. ISIN von Knockout Zertifikaten.
+
+Der letzte Preis in einer Woche scheint nicht der Preis zu sein, der in der Trade Republic App angezeigt wird. 
+
 ## Roadmap
 
 ### Version 0.1
 
-- [ ] Qualität prüfen
-- [ ] [Lang+Schwarz](https://www.ls-x.de/de/download) als Datenquelle erschließen
+- [x] Qualität prüfen
+- [x] [Lang+Schwarz](https://www.ls-x.de/de/download) als Datenquelle erschließen
 - [x] Skript um Kommandos erweitern (update / view / etc)
 
 ### Später / Vielleicht
