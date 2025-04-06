@@ -70,7 +70,7 @@ Startet den Container und startet eine Shell. Gut zum Debuggen.
 
 Einige ISIN, die auf Trade Republic handelbar sind, sind offenbar nicht in den Handelsdaten von LSX enthalten. Das sind z.B. ISIN von Knockout Zertifikaten.
 
-Der letzte Preis in einer Woche scheint nicht der Preis zu sein, der in der Trade Republic App angezeigt wird. 
+Im Moment geht die Zeitinformation verloren, nur das Datum wird behalten.
 
 ## Roadmap
 
