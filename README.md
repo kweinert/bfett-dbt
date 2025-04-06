@@ -30,7 +30,7 @@ In der [Dockerfile](https://github.com/kweinert/buffett/blob/main/Dockerfile) si
 
 Dieses Github-Repository enthält die Modelle für das dbt-Projekt, jedoch nicht die Daten. 
 
-Außerdem enthält das Repository ein Skript `buffett`, mit dem der Docker-Container gestartet wird.
+Außerdem enthält das Repository ein Skript `buffett`, mit dem das Projekt gesteuert wird.
 Angenommen, das Projekt ist im Ordner `~/Dbtspace/buffett` abgelegt:
 
 ```
