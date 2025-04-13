@@ -20,7 +20,7 @@ RUN R -e "install.packages('pak', repos='https://cloud.r-project.org/')"
 RUN mkdir -p /usr/local/lib/R/etc && echo "options(repos = c(CRAN = 'https://p3m.dev/cran/__linux__/jammy/latest', duckdb = 'https://duckdb.r-universe.dev'))" >> /usr/local/lib/R/etc/Rprofile.site
 
 # Installiere weitere Pakete als Binaries über pak
-RUN R -e "pak::pkg_install(c('data.table', 'rmarkdown', 'tinytest', 'plotly', 'htmltools', 'htmlwidgets', 'flexdashboard', 'DBI', 'duckdb', 'reactable'))"
+RUN R -e "pak::pkg_install(c('data.table', 'rmarkdown', 'tinytest', 'plotly', 'htmltools', 'htmlwidgets', 'flexdashboard', 'DBI', 'duckdb', 'reactable', 'echarts4r'))"
 
 # es dauert 1h, duckdb aus den Quellen zu installieren. Wir wählen eine Abkürzung. Nachteil ist, dass es nicht automatisch die neueste Version installiert.
 # r-universe führt zu einem glibc Problem.

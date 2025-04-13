@@ -39,7 +39,7 @@ new_trades AS (
     {% if files_to_process %}
         SELECT 
             isin,
-            tradeTime AS trade_time,
+            CAST(tradeTime AS TIMESTAMP) AS trade_time,
             price,
             currency,
             size
@@ -48,7 +48,7 @@ new_trades AS (
             delim = ';',              -- Semikolon als Trennzeichen
 			decimal_separator = ',',  -- Komma als Dezimalpunkt
 			header = true,            -- Erwartet Kopfzeile
-			dateformat = '%Y-%m-%dT%H:%M:%S.%fZ'
+			timestampformat = '%Y-%m-%dT%H:%M:%S.%fZ'
         )
         {% if is_incremental() %}
             WHERE trade_time > (SELECT max_date FROM max_date)

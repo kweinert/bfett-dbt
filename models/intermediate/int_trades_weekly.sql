@@ -9,19 +9,26 @@ WITH trades_with_week AS (
     FROM {{ ref('stg_trades') }}
 ),
 
-weekly_closes AS (
+weekly_ohlc AS (
     SELECT
         isin,
         calendar_week,
+        FIRST_VALUE(price) OVER (PARTITION BY isin, calendar_week ORDER BY trade_time 
+                                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS open,
         LAST_VALUE(price) OVER (PARTITION BY isin, calendar_week ORDER BY trade_time 
-                                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS close
+                                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS close,
+        MAX(price) OVER (PARTITION BY isin, calendar_week) AS high,
+        MIN(price) OVER (PARTITION BY isin, calendar_week) AS low
     FROM trades_with_week
     QUALIFY ROW_NUMBER() OVER (PARTITION BY isin, calendar_week ORDER BY trade_time DESC) = 1
 )
 
 SELECT
-    wc.isin,
-    wc.calendar_week,
-    wc.close,
-    LAG(wc.close) OVER (PARTITION BY wc.isin ORDER BY wc.calendar_week) AS previous_close
-FROM weekly_closes wc
+    ohlc.isin,
+    ohlc.calendar_week,
+    ohlc.open,
+    ohlc.close,
+    ohlc.high,
+    ohlc.low,
+    LAG(ohlc.close) OVER (PARTITION BY ohlc.isin ORDER BY ohlc.calendar_week) AS previous_close
+FROM weekly_ohlc ohlc
