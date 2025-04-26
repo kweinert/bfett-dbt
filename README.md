@@ -93,10 +93,16 @@ Für Freitag, 4.4.2025, hat der späteste Trade einen Zeitstempel von 14 Uhr.
 
 ## Roadmap / What's new
 
+### Version 0.3
+
+- [ ] Shiny statt Rmd
+- [ ] mehr als ein Portfolio
+- [ ] Überblick mit Ideen darstellen
+
 ### Version 0.2
 
-- [ ] Wochenchart, wo Cash und Portfolio dargestellt sind
-- [ ] aus transactions die Tabellen cash, open_positions und closed_trades generieren.
+- [x] Wochenchart, wo Cash und Portfolio dargestellt sind
+- [x] aus transactions die Tabellen cash, open_positions und closed_trades generieren.
 
 ### Version 0.1
 
@@ -107,7 +113,6 @@ Für Freitag, 4.4.2025, hat der späteste Trade einen Zeitstempel von 14 Uhr.
 ### Später / Vielleicht
 
 - [ ] [edgarWebR](https://cran.r-project.org/web/packages/edgarWebR/vignettes/edgarWebR.html) als Datenquelle erschließen
-- [ ] Shiny statt Rmd?
 - [ ] abgeschlossene Trades darstellen
 - [ ] discount / premium zones bestimmen für einzelne Isin
 
