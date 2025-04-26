@@ -1,4 +1,4 @@
-# buffett: Portfolio als dbt Projekt
+# bfett-dbt: Portfolio als dbt Projekt
 
 ## Überblick
 
@@ -24,53 +24,53 @@ sudo apt install docker-buildx # legacy build decprecated
 docker --version  # Überprüfen
 ```
 
-In der [Dockerfile](https://github.com/kweinert/buffett/blob/main/Dockerfile) sind alle Abhängigkeiten (dbt, duckdb, Python, R) deklariert.
+In der [Dockerfile](https://github.com/kweinert/bfett-dbt/blob/main/Dockerfile) sind alle Abhängigkeiten (dbt, duckdb, Python, R) deklariert.
 
-### buffett dbt Projekt
+### bfett dbt Projekt
 
 Dieses Github-Repository enthält die Modelle für das dbt-Projekt, jedoch nicht die Daten. 
 
-Außerdem enthält das Repository ein Skript `buffett`, mit dem das Projekt gesteuert wird.
-Angenommen, das Projekt ist im Ordner `~/Dbtspace/buffett` abgelegt:
+Außerdem enthält das Repository ein Skript `bfett`, mit dem das Projekt gesteuert wird.
+Angenommen, das Projekt ist im Ordner `~/Dbtspace/bfett` abgelegt:
 
 ```
-mkdir -p ~/Dbtspace/buffett/buffett-build
-cd ~/Dbtspace/buffett
-git clone https://github.com/kweinert/buffett-build.git
-cd buffett-build
-ln -s ./buffett ~/bin/buffett # oder anderes Verzeichnis
-chmod +x ./buffett
+mkdir -p ~/Dbtspace/bfett/bfett-dbt
+cd ~/Dbtspace/bfett
+git clone https://github.com/kweinert/bfett-dbt.git
+cd bfett-dbt
+chmod +x ./bfett
+ln -s ~/Dbtspace/bfett/bfett-dbt/bfett ~/bin/bfett # oder anderes Verzeichnis
 ```
 
 ## Kommandos
 
-Die Hauptfunktion `buffett` unterstützt verschiedene Kommandos.
+Die Hauptfunktion `bfett` unterstützt verschiedene Kommandos.
 
-### buffett build
+### bfett build
 
-Erzeugt ein Docker-Image ohne Daten, aber mit der Modellstruktur und allen Abhängigkeiten. Dieses Kommando wird nur benötigt, wenn `buffett` überarbeitet wurde.
+Erzeugt ein Docker-Image ohne Daten, aber mit der Modellstruktur und allen Abhängigkeiten. Dieses Kommando wird nur benötigt, wenn `bfett` überarbeitet wurde.
 
 ```
-buffett build
+bfett build
 ```
 
-### buffett update
+### bfett update
 
 Startet das Docker-Image, prüft ob neue Handelsdaten der LSX vorliegen, und führt `dbt seed` und `dbt run` aus. Dieser Befehl aktualisiert die Datenbasis.
 
 ```
-buffett update
+bfett update
 ```
 
-### buffett view
+### bfett view
 
 Startet das Dashboard, das auf den Daten beruht.
 
 ```
-buffett view
+bfett view
 ```
 
-### buffett dbt-docs und buffett shell
+### bfett dbt-docs und bfett shell
 
 Startet eine grafische Oberfläche, die es ermöglicht, das dbt-Modell zu untersuchen. Gut zum Debuggen.
 
