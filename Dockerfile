@@ -3,7 +3,7 @@ FROM rocker/r-ver:4.3.2
 WORKDIR /app
 
 # --------
-# Schritt 1: R
+# Schritt: R
 # Installiere Systemabhängigkeiten für R und pak
 RUN apt-get update && apt-get install -y \
 	build-essential \
@@ -27,7 +27,7 @@ RUN R -e "pak::pkg_install(c('data.table', 'rmarkdown', 'tinytest', 'plotly', 'h
 #RUN R -e "install.packages('https://duckdb.r-universe.dev/bin/linux/noble/4.5/src/contrib/duckdb_1.2.1.9000.tar.gz', repos=NULL)"
 
 # --------
-# Schritt 2: dbt
+# Schritt: dbt
 RUN apt-get update && apt-get install -y \
 	python3 \
 	python3-pip \
@@ -48,7 +48,7 @@ RUN /opt/dbt-venv/bin/pip install dbt-core dbt-duckdb duckdb
 ENV PATH="/opt/dbt-venv/bin:${PATH}"
 
 # ---------
-# Schritt 4: buffet Projekt
+# Schritt: bfett dbt Projekt
 # Installiere dbt packages
 # damit dbt deps funktioniert, werden dbt.project.yml und packages.yml benötigt
 # die anderen Dateien werden nur "sicherheitshalber" mitkopiert; sie werden
@@ -58,35 +58,38 @@ COPY packages.yml .
 COPY profiles.yml .  
 COPY models/ ./models/
 COPY macros/ ./macros/
-#COPY docs/ ./docs/
-RUN mkdir -p ./target
-RUN dbt deps
+RUN mkdir -p ./target && \
+    dbt deps    
 
 # -----------
-# Schritt 5: EntryPoint
-# user, ports etc.
-RUN groupadd -g 1000 buffettgroup && \
-    useradd -u 1000 -g buffettgroup buffettuser
-
-RUN mkdir -p /app && \
-    chown -R buffettuser:buffettgroup . && \
-    chmod -R 755 .  
+# Schritt: User
+RUN groupadd -g 1000 bfettgroup && \
+    useradd -u 1000 -g bfettgroup bfettuser && \
+    mkdir -p /app && \
+    chown -R bfettuser:bfettgroup . && \
+    chmod -R 755 . && \
+    mkdir -p /home/bfettuser && \
+    chown -R bfettuser:bfettgroup /home/bfettuser && \
+    chmod -R 755 /home/bfettuser && \
+    mkdir -p /app/scripts
     
-RUN mkdir -p /home/buffettuser
+# -----------
+# Schritt: Skripte    
+COPY ./scripts/bfett_entry.sh /app/scripts 
+COPY ./scripts/update_lsx_trades.sh /app/scripts
+RUN chown -R bfettuser:bfettgroup /app/scripts && \
+    chmod -R 755 /app/scripts && \
+    chmod +x /app/scripts/bfett_entry.sh && \
+    chmod +x /app/scripts/update_lsx_trades.sh
     
-COPY run_dbt.sh . 
-RUN chmod +x run_dbt.sh
+USER bfettuser
 
-COPY run_lsx.sh . 
-RUN chmod +x run_lsx.sh
+# Exponiere Ports 
+EXPOSE 8001
+EXPOSE 8002
 
-USER buffettuser
+# additional command required: shell, update-lsx, update-dbt, serve, help
+ENTRYPOINT ["/app/scripts/bfett_entry.sh"]
 
-EXPOSE 8080
-
-# Standardverhalten: 1) dbt run 2) Dashboard rendern
-ENTRYPOINT ["/app/run_dbt.sh"]
-#CMD ["run", "--project-dir", "/app", "--profiles-dir", "/app"]
-#ENTRYPOINT ["/bin/sh"]
 
 

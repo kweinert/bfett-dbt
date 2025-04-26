@@ -1,7 +1,7 @@
-name: 'buffett'
-version: '0.0.2'
+name: 'bfett'
+version: '0.3.0'
 config-version: 2
-profile: 'buffett'
+profile: 'bfett'
 
 # Verzeichnisse
 model-paths: ["models"]
@@ -11,7 +11,7 @@ docs-paths: ["docs"]
 # Optionale Konfiguration
 require-dbt-version: ">=1.0.0"
 models:
-  buffett:
+  bfett:
     staging:
       materialized: table  # Standard für Staging-Modelle
       stg_trades:

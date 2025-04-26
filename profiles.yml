@@ -1,9 +1,9 @@
-buffett:
+bfett:
   target: dev
   outputs:
     dev:
       type: duckdb
-      path: '/app/database/buffett_dev.duckdb'
+      path: '/app/database/bfett_dev.duckdb'
       threads: 8
     prod:
       type: duckdb
