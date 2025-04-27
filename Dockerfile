@@ -63,6 +63,7 @@ RUN mkdir -p ./target && \
 
 # -----------
 # Schritt: User
+
 RUN groupadd -g 1000 bfettgroup && \
     useradd -u 1000 -g bfettgroup bfettuser && \
     mkdir -p /app && \
@@ -74,7 +75,7 @@ RUN groupadd -g 1000 bfettgroup && \
     mkdir -p /app/scripts
     
 # -----------
-# Schritt: Skripte    
+# Schritt: Entrypoint    
 COPY ./scripts/bfett_entry.sh /app/scripts 
 COPY ./scripts/update_lsx_trades.sh /app/scripts
 RUN chown -R bfettuser:bfettgroup /app/scripts && \
@@ -84,9 +85,9 @@ RUN chown -R bfettuser:bfettgroup /app/scripts && \
     
 USER bfettuser
 
+
 # Exponiere Ports 
 EXPOSE 8001
-EXPOSE 8002
 
 # additional command required: shell, update-lsx, update-dbt, serve, help
 ENTRYPOINT ["/app/scripts/bfett_entry.sh"]

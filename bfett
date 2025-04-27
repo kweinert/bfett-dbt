@@ -9,7 +9,9 @@ SCRIPT_PATH=$(realpath "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 WORK_DIR=$(dirname "$SCRIPT_DIR")
 
-IMAGE="bfett:latest"
+DBT_IMAGE="bfett-dbt"
+FRONT_IMAGE="bfett-front"
+TAG="latest"
 HOST_DIR="$WORK_DIR"
 CONTAINER_DIR="/app"
 
@@ -19,13 +21,23 @@ log() {
     logger -t bfett "$1"
 }
 
-# prüft, ob bfett läuft
-is_running() {
-    RUNNING_CONTAINER=$(docker ps -q -f "ancestor=$IMAGE")
+set_image() {
+    case "$1" in
+        "dbt")
+            IMAGE="$DBT_IMAGE"
+            ;;
+        "front")
+            IMAGE="$FRONT_IMAGE"
+            ;;
+        *)
+            echo "Error: Invalid parameter. Only 'dbt' or 'front' are allowed."
+            return 1
+            ;;
+    esac
 }
 
 # stops container if it is running
-stopifrunning() {
+check_docker() {
 
     # Prüfen, ob Docker läuft
     if ! docker info >/dev/null 2>&1; then
@@ -42,7 +54,7 @@ stopifrunning() {
     fi
 
     # Prüfen, ob ein Container vom Image $IMAGE läuft
-    is_running
+    RUNNING_CONTAINER=$(docker ps -q -f "ancestor=$IMAGE")
     if [ -n "$RUNNING_CONTAINER" ]; then
         log "Stopping existing container: $RUNNING_CONTAINER"
         docker stop "$RUNNING_CONTAINER" >/dev/null 2>&1 || {
@@ -54,44 +66,105 @@ stopifrunning() {
     fi
 }
 
+build_image() {
+	check_docker
+	BUILD_DIR="$WORK_DIR/$IMAGE"
+	if [ ! -d "$BUILD_DIR" ]; then
+		log "Error: Build directory $BUILD_DIR does not exist"
+		cd "$ORIGINAL_DIR"
+		exit 1
+	fi
+	cd "$BUILD_DIR" || {
+		log "Error: Could not change into $BUILD_DIR"
+		cd "$ORIGINAL_DIR"
+		exit 1
+	}
+	docker build --progress=plain -t "$IMAGE:$TAG" .
+	EXIT_CODE=$?
+	if [ $EXIT_CODE -eq 0 ]; then
+		log "Build completed successfully"
+	else
+		log "Build failed with exit code: $EXIT_CODE"
+	fi
+}
+
 run_docker() {
-    local cmd="$1"  # Der Parameter XXXX wird als cmd übergeben
-    local mode="$2" # -it or -d
-    
-    # Prüfen, ob das Verzeichnis existiert
-    if [ ! -d "$WORK_DIR" ]; then
-        log "Error: Directory $WORK_DIR does not exist"
-        cd "$ORIGINAL_DIR"
-        exit 1
-    fi
+	if [ "$IMAGE" = "$DBT_IMAGE" ]; then
+	    # Prüfen, ob das Verzeichnis existiert
+		if [ ! -d "$WORK_DIR" ]; then
+			log "Error: Directory $WORK_DIR does not exist"
+			cd "$ORIGINAL_DIR"
+			exit 1
+		fi
 
-    # In das Arbeitsverzeichnis wechseln
-    cd "$WORK_DIR" || {
-        log "Error: Could not change into $WORK_DIR"
-        cd "$ORIGINAL_DIR"
-        exit 1
-    }
+		# In das Arbeitsverzeichnis wechseln
+		cd "$WORK_DIR" || {
+			log "Error: Could not change into $WORK_DIR"
+			cd "$ORIGINAL_DIR"
+			exit 1
+		}
 
-    # Standardwerte
-    mkdir -p "$HOST_DIR/data"
-    mkdir -p "$HOST_DIR/database"
-    mkdir -p "$HOST_DIR/logs"
-    mkdir -p "$HOST_DIR/dashboard"
-    mkdir -p "$HOST_DIR/seeds"
+		# Standardwerte
+		mkdir -p "$HOST_DIR/data"
+		mkdir -p "$HOST_DIR/database"
+		mkdir -p "$HOST_DIR/logs"
+		mkdir -p "$HOST_DIR/seeds"
+		
+		# Container löschen, falls vorhanden
+		log "Removing existing container: $IMAGE"
+		docker rm -f $IMAGE 2>/dev/null || true
 
-    # Docker-Befehl ausführen
-    docker run "$mode" \
-        -v "$HOST_DIR/data:$CONTAINER_DIR/data" \
-        -v "$HOST_DIR/database:$CONTAINER_DIR/database" \
-        -v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
-        -v "$HOST_DIR/dashboard:$CONTAINER_DIR/dashboard" \
-        -v "$HOST_DIR/seeds:$CONTAINER_DIR/seeds" \
-        -p 8001:8001 \
-        -p 8002:4213 \
-        -p 8003:8003 \
-        --user "$(id -u):$(id -g)" \
-        "$IMAGE" \
-        "$cmd"
+		# Docker-Befehl ausführen
+		log "Starting container: $IMAGE"
+		local cmd="$1"
+		docker run -it \
+			--name "$IMAGE" \
+			-v "$HOST_DIR/data:$CONTAINER_DIR/data" \
+			-v "$HOST_DIR/database:$CONTAINER_DIR/database" \
+			-v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
+			-v "$HOST_DIR/seeds:$CONTAINER_DIR/seeds" \
+			--user "$(id -u):$(id -g)" \
+			"$IMAGE" \
+			"$cmd"
+	elif [ "$IMAGE" = "$FRONT_IMAGE" ]; then
+		# Prüfen, ob das Verzeichnis existiert
+		if [ ! -d "$WORK_DIR" ]; then
+			log "Error: Directory $WORK_DIR does not exist"
+			cd "$ORIGINAL_DIR"
+			exit 1
+		fi
+
+		# In das Arbeitsverzeichnis wechseln
+		cd "$WORK_DIR" || {
+			log "Error: Could not change into $WORK_DIR"
+			cd "$ORIGINAL_DIR"
+			exit 1
+		}
+
+		# Standardwerte
+		mkdir -p "$HOST_DIR/data"
+		mkdir -p "$HOST_DIR/database"
+		mkdir -p "$HOST_DIR/logs"
+		mkdir -p "$HOST_DIR/seeds"
+		
+		# Container löschen, falls vorhanden
+		log "Removing existing container: $IMAGE"
+		docker rm -f $IMAGE 2>/dev/null || true
+
+		# Docker-Befehl ausführen
+		log "Starting container: $IMAGE"
+		local cmd="$1"
+		docker run -d \
+			--name "$IMAGE" \
+			-v "$HOST_DIR/data:$CONTAINER_DIR/data" \
+			-v "$HOST_DIR/database:$CONTAINER_DIR/database" \
+			-v "$HOST_DIR/logs:$CONTAINER_DIR/logs" \
+			-v "$HOST_DIR/seeds:$CONTAINER_DIR/seeds" \
+			-p 8001:8001 \
+			--user "$(id -u):$(id -g)" \
+			"$IMAGE"
+	fi
+
 }
 
 # Hilfetext Funktion
@@ -109,69 +182,37 @@ show_help() {
     echo "  Ensure Docker is installed and running before use."
 }
 
-start_server() {
-    local cmd="$1"  # Der Parameter XXXX wird als cmd übergeben
-	
-    stopifrunning
-    run_docker "$1" "-d"
-	
-    # Fehlerprüfung
-    EXIT_CODE=$?
-    if [ $EXIT_CODE -eq 0 ]; then
-        log "server starting"
-    else
-        log "Failed to start server with exit code: $EXIT_CODE"
-        cd "$ORIGINAL_DIR"
-        exit 1
-    fi
-
-    # Liste der zu prüfenden Ports
-    local ports=("8001") # "8002") # "8003")
-    local timeout=30
-    local failed_ports=()
-    local active_ports=("${ports[@]}")  # Ports, die noch geprüft werden müssen
-
-    # Prüfe alle Ports innerhalb von 30 Sekunden
-    local count=0
-    while [ $count -lt $timeout ] && [ ${#active_ports[@]} -gt 0 ]; do
-        local temp_ports=("${active_ports[@]}")  # Kopie der aktiven Ports
-        active_ports=()  # Leere die Liste für die nächste Iteration
-
-        # Prüfe jeden noch aktiven Port
-        for port in "${temp_ports[@]}"; do
-            if curl -s "http://localhost:$port" >/dev/null 2>&1; then
-                log "Port $port is available"
-            else
-                active_ports+=("$port")  # Port ist noch nicht verfügbar, behalte ihn
-            fi
-        done
-
-        # Wenn noch Ports zu prüfen sind, warte 1 Sekunde
-        if [ ${#active_ports[@]} -gt 0 ]; then
-            sleep 1
-            count=$((count + 1))
-        fi
-    done
-
-    # Prüfe, ob es fehlerhafte Ports gibt
-    if [ ${#active_ports[@]} -gt 0 ]; then
-        failed_ports=("${active_ports[@]}")
-        log "Error: server timeout for ports ${failed_ports[*]} after $count seconds"
-        stopifrunning  # Stoppe den Container
-        cd "$ORIGINAL_DIR"
-        exit 1
-    fi
-
-    log "server started successfully"
-}
-
 view_url() {
     local url="$1"  # Der Parameter wird als url übergeben
+    local restart="$2"
+    set_image front
     
-    image_running
-    if [ -z "$RUNNING_CONTAINER" ]; then
-        start_server
-
+    # Prüfen, ob ein Container vom Image $IMAGE läuft oder ein Neustart erzwungen wird
+    RUNNING_CONTAINER=$(docker ps -q -f "ancestor=$IMAGE")
+    if [ -z "$RUNNING_CONTAINER" ] || [ "$restart" = "restart" ]; then
+        run_docker
+        
+        # Mehrfach versuchen, die Seite zu erreichen (max. 30s insgesamt)
+        local max_attempts=10
+        local delay=3
+        local attempt=1
+        while [ $attempt -le $max_attempts ]; do
+            if curl --silent --fail --max-time 5 "$url" >/dev/null; then
+                log "Server gestartet"
+                break
+            fi
+            log "Versuch $attempt/$max_attempts: Server noch nicht erreichbar, warte $delay Sekunden..."
+            sleep $delay
+            attempt=$((attempt + 1))
+        done
+        
+        # Prüfen, ob der Server nach den Versuchen erreichbar ist
+        if [ $attempt -gt $max_attempts ]; then
+            log "Error: Timeout des Servers nach $((max_attempts * delay)) Sekunden."
+            exit 1
+        fi
+    fi
+    
     # Plattformabhängiger Öffnungsbefehl
     if command -v xdg-open > /dev/null; then
         xdg-open "$url"
@@ -185,43 +226,45 @@ view_url() {
     log "Dashboard view requested"
 }
 
-
 # Parameter prüfen
-if [ $# -ne 1 ]; then
+if [ $# -lt 1 ]; then
     show_help
     exit 1
 fi
 
 case "$1" in
-     "help")
+     help)
         show_help
         EXIT_CODE=0
         ;;
 
-	 "build")
-        stopifrunning
-        BUILD_DIR="$WORK_DIR/bfett-dbt"
-        if [ ! -d "$BUILD_DIR" ]; then
-            log "Error: Build directory $BUILD_DIR does not exist"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        fi
-        cd "$BUILD_DIR" || {
-            log "Error: Could not change into $BUILD_DIR"
-            cd "$ORIGINAL_DIR"
-            exit 1
-        }
-        docker build -t "$IMAGE" .
-        EXIT_CODE=$?
-        if [ $EXIT_CODE -eq 0 ]; then
-            log "Build completed successfully"
-        else
-            log "Build failed with exit code: $EXIT_CODE"
-        fi
+	 build)
+        case "$2" in
+            front)
+                set_image "front"
+                build_image
+                ;;
+            dbt)
+                set_image "dbt"
+                build_image
+                ;;
+            all|"")
+                set_image "front"
+                build_image
+                set_image "dbt"
+                build_image
+                ;;
+            *)
+                echo "Error: Invalid build parameter. Use 'front', 'dbt', 'all', or leave empty."
+                show_help
+                exit 1
+                ;;
+        esac
         ;;
         
     update-lsx-trades|update-lsx-univ|update-dbt)
-		stopifrunning
+		set_image dbt
+		check_docker
 		run_docker "$1" "-it"
         EXIT_CODE=$?
         if [ $EXIT_CODE -eq 0 ]; then
@@ -231,27 +274,19 @@ case "$1" in
         fi
         ;;
     
-    # nothing to log here
     shell)
-        stopifrunning
+        set_image dbt
+		check_docker
 		run_docker "$1" "-it"
         ;;
-        
-    serve)
-        stopifrunning
-		start_server "$1"
-        ;;
-
-    "dbt-docs")
-        view_url "http://localhost:8001"
-        ;;
   
-    "view")
-        view_url "http://localhost:8002"
+    view)
+        # $2=="restart" supported
+        view_url "http://localhost:8001" $2
         ;;
 
     *)
-        log "Error: Unknown command '$1'"
+        log "Error: command '$1' unknown to bfett"
         show_help
         cd "$ORIGINAL_DIR"
         exit 1
