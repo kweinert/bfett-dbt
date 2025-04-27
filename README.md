@@ -1,10 +1,17 @@
-# bfett-dbt: Portfolio als dbt Projekt
+# bfett-dbt: dbt backend für Portfolio-Projekt
 
 ## Überblick
 
-Systematische Aufbereitung von Handelsdaten (Lang+Schwarz), Verschneidung mit Portfolio-Daten, Erstellung eines Dashboards.
+Das Repo ist ein Teil des `bfett` Projekts. Es kümmert sich um die Datenpflege, insbesondere um 
 
-## Installation
+- die systematische Aufbereitung von Handelsdaten (Lang+Schwarz)
+- Verschneidung mit Portfolio-Daten.
+
+Es handelt sich um ein Hobby-Projekt.
+
+Dieses Github-Repository enthält die Modelle für das dbt-Projekt, jedoch nicht die Daten. 
+
+## Abhängigkeiten
 
 Das Projekt wird auf Linux (konkret Xubuntu LTS 24.04) entwickelt und derzeit nur dort getestet.
 
@@ -12,78 +19,17 @@ Das Projekt nutzt
 - [docker](https://www.docker.com/) zum Verwalten der Abhängigkeiten.
 - [duckdb](https://duckdb.org/) als Datenbank-Backend
 - [dbt core](https://www.getdbt.com/) als Datenmanagement-System
-
-### Docker
-
-```
-sudo apt update
-sudo apt install docker.io
-sudo usermod -aG docker $USER  # Erlaubt Docker ohne sudo (nach Neustart wirksam)
-newgrp docker  # Sofort wirksam ohne Logout
-sudo apt install docker-buildx # legacy build decprecated
-docker --version  # Überprüfen
-```
+- [R](https://www.r-project.org/) als Skriptsprache für Nicht-Standard-Transformationen
 
 In der [Dockerfile](https://github.com/kweinert/bfett-dbt/blob/main/Dockerfile) sind alle Abhängigkeiten (dbt, duckdb, Python, R) deklariert.
 
-### bfett dbt Projekt
+## Nutzung
 
-Dieses Github-Repository enthält die Modelle für das dbt-Projekt, jedoch nicht die Daten. 
+Es wird davon ausgegangen, dass bfett-dbt als Docker-Image ausführbar ist. Mittels docker-run werden folgende Parameter unterstützt:
 
-Außerdem enthält das Repository ein Skript `bfett`, mit dem das Projekt gesteuert wird.
-Angenommen, das Projekt ist im Ordner `~/Dbtspace/bfett` abgelegt:
-
-```
-mkdir -p ~/Dbtspace/bfett/bfett-dbt
-cd ~/Dbtspace/bfett
-git clone https://github.com/kweinert/bfett-dbt.git
-cd bfett-dbt
-chmod +x ./bfett
-ln -s ~/Dbtspace/bfett/bfett-dbt/bfett ~/bin/bfett # oder anderes Verzeichnis
-```
-
-## Kommandos
-
-Die Hauptfunktion `bfett` unterstützt verschiedene Kommandos.
-
-### bfett build
-
-Erzeugt ein Docker-Image ohne Daten, aber mit der Modellstruktur und allen Abhängigkeiten. Dieses Kommando wird nur benötigt, wenn `bfett` überarbeitet wurde.
-
-```
-bfett build
-```
-
-### bfett update
-
-Startet das Docker-Image, prüft ob neue Handelsdaten der LSX vorliegen, und führt `dbt seed` und `dbt run` aus. Dieser Befehl aktualisiert die Datenbasis.
-
-```
-bfett update
-```
-
-### bfett view
-
-Startet das Dashboard, das auf den Daten beruht.
-
-```
-bfett view
-```
-
-### bfett dbt-docs und bfett shell
-
-Startet eine grafische Oberfläche, die es ermöglicht, das dbt-Modell zu untersuchen. Gut zum Debuggen.
-
-```
-buffett dbt-docs
-```
-
-Startet den Container und startet eine Shell. Gut zum Debuggen.
-
-```
-buffett shell
-```
-
+- update-lsx-trades: aktualisiert Handelsdaten von LSX. Siehe [lsx_trades](https://github.com/kweinert/lsx_trades)
+- update-dbt: führt dbt seed, compile und run aus. Wird automatisch nach update-lsx-trades ausgeführt.
+- shell: Startet eine interaktive Bash-Shell. Gut zum Debuggen
 
 ## Qualität / Einschränkungen
 
@@ -95,8 +41,8 @@ Für Freitag, 4.4.2025, hat der späteste Trade einen Zeitstempel von 14 Uhr.
 
 ### Version 0.3
 
-- [ ] Shiny statt Rmd
-- [ ] mehr als ein Portfolio
+- [ ] Shiny statt Rmd ==> eigenes Repo
+- [x] mehr als ein Portfolio
 - [ ] Überblick mit Ideen darstellen
 
 ### Version 0.2
