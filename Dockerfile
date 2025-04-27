@@ -62,6 +62,12 @@ RUN mkdir -p ./target && \
     dbt deps    
 
 # -----------
+# Schritt: bfett.processes
+ARG BFETT_P_VER=0.0.2
+RUN R -e "pak::pkg_install('github::kweinert/bfett.processes')" && \
+    R -e "stopifnot(packageVersion('bfett.processes')=='$BFETT_P_VER')"
+
+# -----------
 # Schritt: User
 
 RUN groupadd -g 1000 bfettgroup && \
@@ -84,10 +90,6 @@ RUN chown -R bfettuser:bfettgroup /app/scripts && \
     chmod +x /app/scripts/update_lsx_trades.sh
     
 USER bfettuser
-
-
-# Exponiere Ports 
-EXPOSE 8001
 
 # additional command required: shell, update-lsx, update-dbt, serve, help
 ENTRYPOINT ["/app/scripts/bfett_entry.sh"]

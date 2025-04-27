@@ -7,6 +7,8 @@
 
 # Funktion für update-dbt Logik
 update_dbt() {
+  echo "Processing transactions..."
+  R -e "bfett.processes::process_transactions('/app/seeds/transactions.csv')"
   echo "Running dbt seed, compile, and run..."
   dbt seed # Kleine Tabellen kopieren
   dbt compile
