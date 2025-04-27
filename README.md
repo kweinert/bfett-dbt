@@ -41,14 +41,15 @@ Für Freitag, 4.4.2025, hat der späteste Trade einen Zeitstempel von 14 Uhr.
 
 ### Version 0.3
 
-- [ ] Shiny statt Rmd ==> eigenes Repo
+- [x] Shiny statt Rmd ==> eigenes [Repo](https://github.com/kweinert/bfett-front)
 - [x] mehr als ein Portfolio
-- [ ] Überblick mit Ideen darstellen
+- [ ] bfett Skript als eigenes Repo herauslösen
 
 ### Version 0.2
 
 - [x] Wochenchart, wo Cash und Portfolio dargestellt sind
 - [x] aus transactions die Tabellen cash, open_positions und closed_trades generieren.
+- [x] Stammdaten von L+S herunterladen
 
 ### Version 0.1
 
@@ -58,7 +59,7 @@ Für Freitag, 4.4.2025, hat der späteste Trade einen Zeitstempel von 14 Uhr.
 
 ### Später / Vielleicht
 
+- [ ] update_lsx_univ.sh
 - [ ] [edgarWebR](https://cran.r-project.org/web/packages/edgarWebR/vignettes/edgarWebR.html) als Datenquelle erschließen
-- [ ] abgeschlossene Trades darstellen
 - [ ] discount / premium zones bestimmen für einzelne Isin
 
