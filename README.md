@@ -39,11 +39,16 @@ Für Freitag, 4.4.2025, hat der späteste Trade einen Zeitstempel von 14 Uhr.
 
 ## Roadmap / What's new
 
+### Version 0.4
+
+- [ ] Umgang mit Aktiensplits testen
+- [ ] Daten für Candle-Sticks
+- [ ] IRR für jede Woche
+
 ### Version 0.3
 
 - [x] Shiny statt Rmd ==> eigenes [Repo](https://github.com/kweinert/bfett-front)
 - [x] mehr als ein Portfolio
-- [ ] bfett Skript als eigenes Repo herauslösen
 
 ### Version 0.2
 
